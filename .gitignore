@@ -1,0 +1,21 @@
+# Secrets générés localement — NE JAMAIS commiter
+.env
+.env.*
+!.env.example
+k8s/02-secrets.yaml
+k8s/10-tls-secret.yaml
+
+# Dépendances
+node_modules/
+dist/
+build/
+
+# Caches et logs
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Kubeconfig copiée depuis le master (contient les certificats du cluster)
+kubeconfig
+kubeconfig.yaml
