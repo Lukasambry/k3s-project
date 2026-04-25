@@ -41,3 +41,51 @@ clusterisation/
 | Base de données | PostgreSQL 16 Alpine |
 | Stockage persistant | local-path provisioner (intégré à k3s) |
 
+## Documentation
+
+Tous les détails de mise en place et de validation sont dans `docs/` :
+
+- [`01-architecture.md`](docs/01-architecture.md) — schéma d'architecture, choix techniques, limitations
+- [`02-vm-setup.md`](docs/02-vm-setup.md) — création des 3 VMs VirtualBox (Ubuntu Server 24.04)
+- [`03-k3s-install.md`](docs/03-k3s-install.md) — installation du cluster k3s (1 master + 2 workers)
+- [`04-app-deployment.md`](docs/04-app-deployment.md) — build des images, déploiement des manifests
+- [`05-tests-ha.md`](docs/05-tests-ha.md) — 8 tests de haute disponibilité avec captures
+- [`06-troubleshooting.md`](docs/06-troubleshooting.md) — pièges rencontrés et solutions
+
+## Quickstart (reproduction)
+
+Pour un correcteur qui clone le dépôt et veut tout rejouer :
+
+1. **VirtualBox 7.1+**, ISO Ubuntu Server 24.04 téléchargée, `kubectl` et `docker` installés sur le host.
+2. Suivre [`docs/02-vm-setup.md`](docs/02-vm-setup.md) pour créer les 3 VMs (≈ 4-5 h la première fois).
+3. Suivre [`docs/03-k3s-install.md`](docs/03-k3s-install.md) pour installer k3s et copier la kubeconfig sur le host.
+4. Sur le host, dans le repo cloné :
+   ```bash
+   # Code applicatif (génère les package-lock.json nécessaires aux Dockerfiles)
+   (cd app/backend && npm install) && (cd app/frontend && npm install)
+
+   # Login Docker Hub + build/push avec ton propre user
+   docker login
+   export DOCKERHUB_USER=<votre-user-dockerhub>
+   ./scripts/build-and-push.sh v1
+   # Puis adapter k8s/06-backend-deployment.yaml et k8s/08-frontend-deployment.yaml
+   # pour pointer sur <votre-user>/todo-back:v1 et <votre-user>/todo-front:v1
+
+   # Secrets et certif TLS
+   cp .env.example .env                       # remplir POSTGRES_PASSWORD avec un mot de passe fort
+   ./scripts/gen-secrets.sh
+   ./scripts/gen-tls.sh app.local
+
+   # DNS local
+   echo "192.168.56.10 app.local" | sudo tee -a /etc/hosts
+
+   # Déployer
+   ./scripts/deploy.sh
+   ```
+5. Ouvrir `https://app.local` (accepter le certificat auto-signé).
+6. Rejouer les tests HA : voir [`docs/05-tests-ha.md`](docs/05-tests-ha.md).
+
+## Contexte
+
+Projet final du module *Clusterisation de container* (ESGI 5IW, intervenant Vincent LAINE). Énoncé complet dans [`SUJET_DU_PROJET.pdf`](./SUJET_DU_PROJET.pdf).
+
