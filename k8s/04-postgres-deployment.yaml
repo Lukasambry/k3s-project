@@ -6,7 +6,9 @@ metadata:
   labels: { app: postgres }
 spec:
   replicas: 1
-  strategy: { type: Recreate }
+  strategy: { type: Recreate }   # stateful → ne peut pas avoir 2 pods en parallèle sur le même PV ROX
+  revisionHistoryLimit: 5         # bonus 2 : conserve les 5 dernières revisions pour rollback
+  progressDeadlineSeconds: 600    # bonus 2 : si le rollout prend > 10 min, marqué Failed
   selector:
     matchLabels: { app: postgres }
   template:
@@ -27,6 +29,14 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
+          # bonus 1 : Resource Requests & Limits → QoS class "Burstable"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
           livenessProbe:
             tcpSocket: { port: 5432 }
             initialDelaySeconds: 30
