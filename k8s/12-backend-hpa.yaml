@@ -1,0 +1,26 @@
+# bonus 4 : HPA — autoscaling horizontal du backend selon la charge CPU
+# Pré-requis : metrics-server (intégré k3s) + resources.requests.cpu sur le Deployment (bonus 1)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-hpa
+  namespace: todo-app
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend
+  minReplicas: 2          # jamais moins que les 2 replicas du barème
+  maxReplicas: 8          # plafond pour éviter de saturer le cluster
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70   # cible : 70 % du CPU.requests (50m → ~35m moyen avant scale-up)
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30   # réagit vite à une montée
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5 min avant de redescendre (évite le yo-yo)

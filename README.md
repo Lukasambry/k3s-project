@@ -51,6 +51,7 @@ Tous les détails de mise en place et de validation sont dans `docs/` :
 - [`04-app-deployment.md`](docs/04-app-deployment.md) — build des images, déploiement des manifests
 - [`05-tests-ha.md`](docs/05-tests-ha.md) — 8 tests de haute disponibilité avec captures
 - [`06-troubleshooting.md`](docs/06-troubleshooting.md) — pièges rencontrés et solutions
+- [`07-bonuses.md`](docs/07-bonuses.md) — bonus implémentés (Resource Limits, Rollback, Rolling Update, HPA)
 
 ## Quickstart (reproduction)
 
